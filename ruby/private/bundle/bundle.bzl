@@ -92,6 +92,11 @@ def generate_bundle_build_file(runtime_ctx):
 def _rb_bundle_impl(ctx):
     ctx.symlink(ctx.attr.gemfile, "Gemfile")
     ctx.symlink(ctx.attr.gemfile_lock, "Gemfile.lock")
+    if ctx.attr.vendor_cache:
+        ctx.symlink(
+            ctx.path(str(ctx.path(ctx.attr.gemfile).dirname) + "/vendor"),
+            ctx.path("vendor"),
+        )
     ctx.symlink(ctx.attr._create_bundle_build_file, SCRIPT_BUILD_FILE_GENERATOR)
     ctx.symlink(ctx.attr._install_bundler, SCRIPT_INSTALL_BUNDLER)
     ctx.symlink(ctx.attr._activate_gems, SCRIPT_ACTIVATE_GEMS)
@@ -134,6 +139,9 @@ rb_bundle = repository_rule(
         ),
         "version": attr.string(
             mandatory = False,
+        ),
+        "vendor_cache": attr.bool(
+            doc = "Symlink the vendor directory into the Bazel build space, this allows Bundler to access vendored Gems",
         ),
         "bundler_version": attr.string(
             default = DEFAULT_BUNDLER_VERSION,
